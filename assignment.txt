@@ -1,0 +1,10 @@
+ass-1
+Create a .net  hello world web application, build, publish and drop the package artifacts.
+ass-2
+Push the package to azure git repo and download from azure git repo.
+ass-3
+How to create looping with yaml script ?
+ass-4
+What is variable groups in Azure  ?
+ass-5
+What is service connection in Azure Devops ?
