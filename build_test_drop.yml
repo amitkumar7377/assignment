@@ -1,0 +1,58 @@
+parameters:
+- name: configurations
+  type: object
+  default: []
+
+jobs:
+- job: LoopJob
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+    - script: echo "Looping through configurations: ${{ parameters.configurations }}"
+      displayName: "Loop Step"
+
+    - task: UseDotNet@2
+      inputs:
+        packageType: 'sdk'
+        version: '3.x'
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--configuration $(configuration)'
+
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'publish'
+        publishWebProjects: true
+        arguments: '--configuration $(configuration) --output $(Build.ArtifactStagingDirectory)/$(configuration)'
+
+- job: PublishArtifactsJob
+  dependsOn: LoopJob
+  steps:
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        artifactName: 'published-artifacts'
+
+- job: DropArtifactsJob
+  dependsOn: PublishArtifactsJob
+  steps:
+    - task: DownloadPipelineArtifact@2
+      inputs:
+        buildType: 'specific'
+        project: '$(System.TeamProject)'
+        definition: '$(Build.DefinitionName)'
+        buildVersionToDownload: 'latest'
+        artifactName: 'published-artifacts'
+        targetPath: '$(Pipeline.Workspace)/downloaded-artifacts'
+
+    - script: |
+      displayName: 'Use Downloaded Artifacts'
