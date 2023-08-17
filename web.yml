@@ -1,0 +1,63 @@
+trigger:
+- main
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  buildConfiguration: 'Release'
+  repositoryName: 'MyRepository'
+  artifactName: 'drop'
+
+steps:
+- task: UseDotNet@2
+  inputs:
+    packageType: 'sdk'
+    installationPath: $(Agent.ToolsDirectory)/dotnet
+    version: '3.x'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'restore'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+    arguments: '--configuration $(buildConfiguration)'
+
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'publish'
+    publishWebProjects: true
+    arguments: '--configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: $(artifactName)
+
+- script: |
+    git config --global user.email "amit7akr@outlook.com"
+    git config --global user.name "amit"
+    git clone $(Build.Repository.Uri)
+    cd $(repositoryName)
+    git checkout -b add-artifact
+    cp -r ../$(artifactName) .
+    git add $(artifactName)
+    git commit -m "Add build artifact"
+    git push origin add-artifact
+  displayName: 'Push Artifact to Git Repo'
+
+- task: DownloadPipelineArtifact@2
+  inputs:
+    buildType: 'specific'
+    project: '$(System.TeamProject)'
+    definition: '$(Build.DefinitionName)'
+    buildVersionToDownload: 'latest'
+    artifactName: $(artifactName)
+    targetPath: '$(Build.ArtifactStagingDirectory)/downloaded'
+
+- script: |
+
+  displayName: 'Use Downloaded Artifact'
