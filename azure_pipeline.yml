@@ -1,0 +1,11 @@
+trigger:
+  - main
+
+pr: none
+
+jobs:
+- template: build_publish_drop.yml
+  parameters:
+    configurations:
+      - Debug
+      - Release
