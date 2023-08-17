@@ -2,7 +2,7 @@ ass-1
 Create a .net  hello world web application, build, publish and drop the package artifacts.
 Solution-
 
-The pipeline is triggered whenever changes are pushed to the main branch. It uses a Windows agent (vmImage: 'windows-latest').
+Created a yaml pipeline "web.yml" which is triggered whenever changes are pushed to the main branch. It uses a Windows agent (vmImage: 'windows-latest').
 And performs the following steps:
 It sets the build configuration variable to 'Release'.
 It uses the UseDotNet task to install the .NET Core SDK version 3.x on the agent machine.
@@ -15,7 +15,7 @@ ass-2
 Push the package to azure git repo and download from azure git repo.
 
 Solution-
-
+By using the same yaml pipeline "web.yml",
 After building and publishing the artifact, it is pushed to an Azure Git repository under a branch named "add-artifact".
 The script then uses the DownloadPipelineArtifact task to download the latest build artifact from the specified Azure DevOps pipeline and stores it in the "downloaded" subdirectory of the agent's working directory.
 
@@ -23,6 +23,9 @@ ass-3
 
 How to create looping with yaml script ?
 Solution-
+Taking an example of 2 yaml pipeline files,
+1-"build_publish_drop.yml" template defines the loop behavior for building, publishing, and dropping artifacts.
+2-The main pipeline file "azure_pipeline.yml" uses the template and provides the configurations for looping.
 
 
 ass-4
@@ -39,6 +42,7 @@ Set the appropriate scope for the variable group (project or specific pipelines)
 Save the variable group.
 
 In YAML Pipeline,we can declare it as,
+
 variables:
 - group: MyVariableGroup
 
